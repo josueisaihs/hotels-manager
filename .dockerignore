@@ -1,0 +1,9 @@
+docs/
+docker/prod/Dockerfile
+docker/prod/nginx/Dockerfile
+docker/test/*
+docker-compose*
+Makefile
+README.md
+.gitignore
+.env*

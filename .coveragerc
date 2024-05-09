@@ -1,0 +1,34 @@
+[run]
+branch = true
+source = app/
+command_line=./manage.py test app
+omit =
+    app/*/tests/*
+    app/*/__init__.py
+    app/*/migrations/*
+    app/*/asgi.py
+    app/*/wsgi.py
+    app/*/settings/*
+    app/*/urls.py
+    app/*/apps.py
+
+
+[paths]
+source =
+    app/
+
+[report]
+exclude_lines =
+    # Have to re-enable the standard pragma
+    pragma: no cover
+    # Don't complain about missing debug-only code:
+    def __repr__
+    if self\.debug
+    # Don't complain if tests don't hit defensive assertion code:
+    raise AssertionError
+    raise NotImplementedError
+    return NotImplemented
+    if 0:
+    if __name__ == .__main__.:
+
+ignore_errors = True

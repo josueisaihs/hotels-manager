@@ -1,0 +1,67 @@
+version: "3.7"
+services:
+
+  redis:
+    container_name: hotelapp-redis
+    image: redis:7.2.4
+    expose:
+      - "6379:6379"
+
+  postgres:
+    container_name: hotelapp-postgres
+    image: postgres:14.2
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    env_file:
+      - docker/.env.db
+
+  worker:
+    container_name: hotelapp-worker
+    depends_on: [redis]
+    build:
+      dockerfile: docker/prod/Dockerfile
+      context: .
+    volumes:
+      - .:/app
+    command: ["celery", "-A", "app.config", "worker", "--loglevel=info", "--concurrency=1", "-E"]
+    env_file:
+      - app/config/settings/.env.prod
+
+  backend:
+    container_name: hotelapp-backend
+    depends_on:
+      - postgres
+      - redis
+      - worker
+    build:
+      dockerfile: docker/prod/Dockerfile
+      context: .
+    volumes:
+      - .:/app
+      - static:/app/app/staticfiles/
+      - media:/app/app/mediafiles/
+    command: ["/wait-for-it.sh", "postgres:5432", "--timeout=30", "--strict", "--", "gunicorn", "--bind", "0:8000", "app.config.wsgi:application"]
+    ports:
+      - "8000:8000"
+    env_file:
+      - app/config/settings/.env.prod
+
+  nginx:
+    container_name: hotelapp-nginx
+    build:
+      dockerfile: docker/prod/nginx/Dockerfile
+      context: .
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    env_file:
+      - app/config/settings/.env.prod
+    volumes:
+      - static:/app/app/staticfiles/
+      - media:/app/app/mediafiles/
+
+volumes:
+  pgdata:
+  static:
+  media:
