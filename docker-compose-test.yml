@@ -1,0 +1,48 @@
+version: "3.7"
+
+services:
+  redis:
+    container_name: "hotelapp-redis-test"
+    image: redis:7.2.4
+    expose:
+      - "6379:6379"
+
+  postgres:
+    container_name: "hotelapp-postgres-test"
+    image: postgres:14.2
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    env_file:
+      - docker/.env.db
+
+  worker:
+    container_name: "hotelapp-worker-test"
+    depends_on: [redis]
+    build:
+      dockerfile: docker/test/Dockerfile
+      context: .
+    volumes:
+      - .:/app
+    command: ["celery", "-A", "app.config", "worker", "--loglevel=info", "--concurrency=1", "-E"]
+    env_file:
+      - app/config/settings/.env.test
+
+  backend:
+    container_name: "hotelapp-backend-test"
+    depends_on:
+      - postgres
+      - redis
+      - worker
+    build:
+      dockerfile: docker/test/Dockerfile
+      context: .
+    volumes:
+      - .:/app
+    expose:
+      - "8000:8000"
+    command: ["docker/wait-for-it.sh", "postgres:5432", "--timeout=30", "--strict", "--", "python", "manage.py", "test"]
+    env_file:
+      - app/config/settings/.env.test
+
+volumes:
+  pgdata: {}

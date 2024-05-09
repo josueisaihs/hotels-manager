@@ -1,0 +1,13 @@
+{% extends 'admin/change_form.html' %}
+{% load i18n admin_urls %}
+
+{% block submit_buttons_bottom %}
+    {% if original %}
+        <div class="submit-row">
+            <a href="../reject" class="closelink">Save as Rejected</a>
+            <a href="../pending" class="closelink">Save as Pending</a>
+            <a href="../approve_form" class="closelink" style="background: rgba(0, 128, 0, 0.679);">Approve</a>
+        </div>
+    {% endif %}
+{{ block.super }}
+{% endblock %}
