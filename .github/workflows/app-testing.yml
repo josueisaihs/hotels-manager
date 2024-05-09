@@ -1,0 +1,32 @@
+name: App Test
+
+on: [push]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Create enviroment file
+              run: |
+                echo "DJANGO_ENV=test" >> ./app/config/settings/.env.test
+                echo "CELERY_BROKER_URL=redis://redis:6379/0" >> ./app/config/settings/.env.test
+                echo "CELERY_RESULT_BACKEND=redis://redis:6379/0" >> ./app/config/settings/.env.test
+                echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> ./app/config/settings/.env.test
+                echo "EMAIL_NO_REPLY=no-reply@hotelsmanager.com" >> ./app/config/settings/.env.test
+                echo "DB_NAME=django_test" >> ./app/config/settings/.env.test
+                echo "DB_USER=${{ secrets.DB_USER }}" >> ./app/config/settings/.env.test
+                echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> ./app/config/settings/.env.test
+                echo "DB_HOST=postgres" >> ./app/config/settings/.env.test
+                echo "DB_PORT=5432" >> ./app/config/settings/.env.test
+                echo "POSTGRES_DB=django_test" >> ./docker/.env.db
+                echo "POSTGRES_USER=${{ secrets.DB_USER }}" >> ./docker/.env.db
+                echo "POSTGRES_PASSWORD=${{ secrets.DB_PASSWORD }}" >> ./docker/.env.db
+
+            - name: Build containers
+              run: make build-test
+
+            - name: Run Tests
+              run: make test

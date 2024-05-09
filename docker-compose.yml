@@ -5,7 +5,7 @@ services:
     container_name: hotelapp-redis
     image: redis:7.2.4
     expose:
-      - "6379:6379"
+      - "6379"
 
   postgres:
     container_name: hotelapp-postgres
